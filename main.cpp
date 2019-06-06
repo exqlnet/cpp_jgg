@@ -119,6 +119,5 @@ int main() {
 
     Player player;
     player.startGame();
-//    cout << player.nums[0] << endl;
     return 0;
 }
