@@ -15,7 +15,8 @@ public:
     void printStatus();
     void shuffle();
 
-    int step;
+private:
+    int step = 0;
     int currentPosition = 8;
     int nums[9] = {1,2,3,4,5,6,7,8,0};
 };
