@@ -9,65 +9,76 @@ public:
 
 class Player{
 public:
-    void startGame();
-    void isWin();
-    void move(Direction direction);
-    void printStatus();
-    void shuffle();
+    void startGame();  // 开始游戏
+    bool isWin(); // 是否赢了
+    void move(Direction direction); // 移动
+    void printStatus(); // 输出当前状态
+    void shuffle();  // 打乱顺序
 
 private:
     int step = 0;
-    int currentPosition = 8;
-    int nums[9] = {1,2,3,4,5,6,7,8,0};
+    int currentX=2;
+    int currentY=2;
+    int nums[3][3] = {1,2,3,4,5,6,7,8,0};
 };
 
 
 void Player::move(Direction direction){
-    int tmp = currentPosition;
-    if(direction.x == 1 && direction.y == 0 && currentPosition != 2 && currentPosition != 5 && currentPosition != 8){
-        currentPosition += 1;
-        step ++;
-    }else if(direction.x == -1 && direction.y == 0 && currentPosition != 0 && currentPosition != 3 && currentPosition != 6){
-        currentPosition -= 1;
-        step ++;
-    }
-    else if(direction.x == 0 && direction.y == -1 && currentPosition != 0 && currentPosition != 1 &&currentPosition !=2){
-        currentPosition -= 3;
-        step ++;
-    }
-    else if(direction.x == 0 && direction.y == 1 && currentPosition != 6 && currentPosition != 7 && currentPosition != 8){
-        currentPosition += 3;
-        step ++;
-    }
-    nums[tmp] = nums[currentPosition];
-    nums[currentPosition] = 0;
+    int targetX = currentX + direction.x;
+    int targetY = currentY + direction.y;
+    if (!((targetX<3 && targetX>=0)&&(targetY<3&&targetY>=0)))return;
+
+    // 交换(currentX, currentY)和(targetX, targetY)
+    int tmp = nums[currentX][currentY];
+    nums[currentX][currentY] = nums[targetX][targetY];
+    nums[targetX][targetY] = tmp;
+
+    // 更新当前位置信息
+    currentX = targetX;
+    currentY = targetY;
+    step++;
+
 }
 
-void Player::isWin(){
-    int i = 0;
-    for (;i<8;i++){
-        if(nums[i] != (i+1))return;
+bool Player::isWin(){
+    int c = 1;
+    for (int x = 0;x<3;x++){
+        for(int y =0;y<3;y++){
+            if(nums[x][y]!=c)return false;
+            if(x==2&&y==1)c=0;
+            else c++;
+        }
     }
     cout << "\n你赢了, 步数：" << step << endl;
+    return true;
 }
 
 void Player::printStatus() {
-    cout << "您已操作了" << step << "步，" << "当前状态: " << endl;
-    cout << nums[0] << " " << nums[1] << " " << nums[2] << endl;
-    cout << nums[3] << " " << nums[4] << " " << nums[5] << endl;
-    cout << nums[6] << " " << nums[7] << " " << nums[8] << endl;
+    cout << "您已操作了" << step << "步，" << "当前状态: "<< endl;
+    cout << nums[0][0] << " " << nums[0][1] << " " << nums[0][2] << endl;
+    cout << nums[1][0] << " " << nums[1][1] << " " << nums[1][2] << endl;
+    cout << nums[2][0] << " " << nums[2][1] << " " << nums[2][2] << endl;
 }
+
+
 void Player::shuffle()
 {
-    int length = 8;
-
-    int i = 0;
+    int length = 3;
     srand(unsigned(time(NULL)));
-    for (;i<length;i++){
-        int target = rand()%length;
-        int tmp = nums[target];
-        nums[target] = nums[i];
-        nums[i] = tmp;
+
+    for (int x = 0;x<length;x++){
+        for(int y = 0;y<length;y++){
+            int targetX = rand()%length;
+            int targetY = rand()%length;
+
+            // 如果轮到最后一个就直接跳过，打乱顺序的时候不能把最后的0给打乱了
+            if((x==2&&y==2)||(targetX==2&&targetY==2))continue;
+
+            // 随机交换位置
+            int tmp = nums[x][y];
+            nums[x][y] = nums[targetX][targetY];
+            nums[targetX][targetY] = tmp;
+        }
     }
 }
 
@@ -75,27 +86,27 @@ Direction getDirectionFromInput(char dInput){
     Direction direction = Direction();
     switch (dInput){
         case 'w':
-            direction.x = 0;
-            direction.y = -1;
-            break;
-        case 's':
-            direction.x = 0;
-            direction.y = 1;
-            break;
-        case 'a':
             direction.x = -1;
             direction.y = 0;
             break;
-        case 'd':
+        case 's':
             direction.x = 1;
             direction.y = 0;
+            break;
+        case 'a':
+            direction.x = 0;
+            direction.y = -1;
+            break;
+        case 'd':
+            direction.x = 0;
+            direction.y = 1;
             break;
     }
     return direction;
 }
 
 void Player::startGame() {
-//    shuffle();
+    shuffle();
     cout << "游戏开始，w上 s下 a左 d右 n退出游戏" << endl;
     printStatus();
     Direction direction;
@@ -108,6 +119,7 @@ void Player::startGame() {
         }
         direction = getDirectionFromInput(dInput);
         move(direction);
+        if(isWin())break;
         printStatus();
     }
 }
